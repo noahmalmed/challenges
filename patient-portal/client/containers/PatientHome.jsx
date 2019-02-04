@@ -1,61 +1,61 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import Button from 'material-ui/Button';
-
-import Appointments from './Appointments';
-import PatientDetails from '../components/PatientDetails';
-import Files from '../components/Files';
+import { connect } from 'react-redux';
 import { withStyles } from 'material-ui/styles';
 
-import { patient, pendingAppts, pastAppts, files } from '../dummyData';
+import PatientView from '../components/PatientView';
+import { getPatientData } from '../actions/patients';
 
 const styles = {
-  buttonWrapper: {
-    marginTop: 30,
-  },
-  button: {
-    color: 'white',
-    textDecoration: 'none',
-    fontSize: 12,
+  header: {
+    textAlign: 'center',
   },
 };
 
-const PatientHome = ({ classes }) => (
-  <div className="container">
-    <h2>Welcome back, Luna Lovegood.</h2>
-    <div className="profile">
-      <div>
-        <h3>Your Profile</h3>
-        <PatientDetails patient={patient} />
-      </div>
-      <div className={classes.buttonWrapper}>
-        <Button variant="raised" color="primary">
-          <Link to="/request-appointment" className={classes.button}>Request Appointment</Link>
-        </Button>
-      </div>
-    </div>
-    <div>
-      <h3>Upcoming Appointments</h3>
-      <div>No upcoming appointments.</div>
-      <h3>Pending Appointments</h3>
-      <Appointments
-        appointments={pendingAppts}
-        type="pending"
-        viewer="patient"
+class PatientHome extends Component {
+  componentDidMount() {
+    this.props.loadPatientData(this.props.user.id);
+  }
+
+  render() {
+    if (this.props.isLoading) {
+      return (
+        <div className="container">
+          <h3 className={this.props.classes.header}> Loading Patient Data </h3>
+        </div>
+      );
+    }
+    return (
+      <PatientView
+        patientData={this.props.patientData}
       />
-      <h3>Past Appointments</h3>
-      <Appointments appointments={pastAppts} type="past" viewer="patient" />
-    </div>
-    <div>
-      <h3>Your Files</h3>
-      <Files files={files} />
-    </div>
-  </div>
-);
+    );
+  }
+}
 
 PatientHome.propTypes = {
   classes: PropTypes.object.isRequired,
+  isLoading: PropTypes.bool,
+  patientData: PropTypes.object,
+  loadPatientData: PropTypes.func,
+  user: PropTypes.shape({
+    id: PropTypes.string,
+  }),
 };
 
-export default withStyles(styles)(PatientHome);
+const mapStateToProps = (state) => ({
+  isSuccess: state.patient.isSuccess,
+  isLoading: state.patient.isLoading,
+  isFail: state.patient.isFail,
+  patientData: state.patient.data,
+  user: state.user.data,
+  isAuthenticated: state.user.isAuthenticated,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  loadPatientData: (patientId) => {
+    dispatch(getPatientData(patientId));
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(PatientHome));

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Appointments from './Appointments';
+import Appointments from '../components/Appointments';
 import PatientDetails from '../components/PatientDetails';
 import Files from '../components/Files';
 

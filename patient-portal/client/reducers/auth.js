@@ -1,28 +1,29 @@
-import axios from 'axios';
+import { AUTHENTICATION_ACTIONS } from '../actions/auth';
 
-const AUTHENTICATED = 'AUTHENTICATED';
+const INITIAL_STATE = {
+  isAuthenticated: false,
+  authenticationRequest: false,
+  authenticationFail: false,
+  data: {},
+};
 
-export const authenticated = (user) => ({
-  type: AUTHENTICATED, user,
-});
-
-export const login = (email, password) =>
-  (dispatch) =>
-    axios.post(
-      '/api/auth/login',
-      { email, password },
-    )
-      .then((res) => dispatch(authenticated(res.data)))
-      .catch(() => dispatch(authenticated(null)));
-
-const authReducer = (state = null, action) => {
+const authReducer = (state = INITIAL_STATE, action) => {
   let newState;
   switch (action.type) {
-    case AUTHENTICATED:
-      newState = action.user;
+    case AUTHENTICATION_ACTIONS.AUTHENTICATED:
+      newState = { ...state, isAuthenticated: true, data: action.user };
+      break;
+    case AUTHENTICATION_ACTIONS.AUTHENTICATION_REQUEST:
+      newState = { ...state, authenticationRequest: true };
+      break;
+    case AUTHENTICATION_ACTIONS.AUTHENTICATION_FAIL:
+      newState = { ...state, authenticationFail: true, authenticationRequest: false };
+      break;
+    case AUTHENTICATION_ACTIONS.RESET_STATE:
+      newState = INITIAL_STATE;
       break;
     default:
-      return state;
+      newState = state;
   }
   return newState;
 };

@@ -6,6 +6,7 @@ import Button from 'material-ui/Button';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField';
 import { withStyles } from 'material-ui/styles';
+import moment from 'moment';
 
 const styles = {
   card: {
@@ -29,6 +30,9 @@ const styles = {
     fontSize: 12,
   },
 };
+
+const convertDateTime = (dateTime) =>
+  moment(dateTime).format('dddd, MMMM D, YYYY, H:mm A');
 
 class Appointment extends Component {
   constructor(props) {
@@ -56,7 +60,7 @@ class Appointment extends Component {
         <CardContent>
           <div className={classes.content}>
             <div>
-              <div className={classes.header}>{appt.datetime}</div>
+              <div className={classes.header}>{convertDateTime(appt.datetime)}</div>
               <div>
                 {appt.purpose}
               </div>
@@ -103,7 +107,7 @@ class Appointment extends Component {
 
 Appointment.propTypes = {
   appt: PropTypes.shape({
-    id: PropTypes.number,
+    id: PropTypes.string,
     status: PropTypes.string,
     purpose: PropTypes.string,
     datetime: PropTypes.string,

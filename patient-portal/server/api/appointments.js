@@ -10,7 +10,14 @@ export default Router()
   })
 
   .get('/:id', async (req, res) => {
-    const result = await Api.Appointment.get(req.params.id);
+    const result = await Api.Appointment.get({ id: req.params.id });
+    res
+      .status(result.error ? 200 : 500)
+      .send(result);
+  })
+
+  .get('/patient/:patientId', async (req, res) => {
+    const result = await Api.Appointment.get({ patient_id: req.params.patient_id });
     res
       .status(result.error ? 200 : 500)
       .send(result);
