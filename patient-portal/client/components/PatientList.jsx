@@ -21,26 +21,33 @@ const styles = {
   },
 };
 
-const PatientList = ({ patients, history, classes }) => (
+const PatientList = ({
+  patients,
+  history,
+  classes,
+  searchQuery,
+}) => (
   <Paper className={classes.container}>
     <h3>Patients</h3>
     {
-      patients.map((patient) => (
-        <div
-          key={patient.id}
-          onClick={() => {
-            history.push(`/patient/${patient.id}`);
-          }}
-          onKeyPress={() => {
-            history.push(`/patient/${patient.id}`);
-          }}
-          className={classes.patientRow}
-        >
-          <Divider />
-          <div className={classes.patientInfo}>
-            {patient.name}
-          </div>
-        </div>))
+      patients
+        .filter((patient) => searchQuery === '' || `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchQuery))
+        .map((patient) => (
+          <div
+            key={patient.id}
+            onClick={() => {
+              history.push(`/patient/${patient.user_id}`);
+            }}
+            onKeyPress={() => {
+              history.push(`/patient/${patient.user_id}`);
+            }}
+            className={classes.patientRow}
+          >
+            <Divider />
+            <div className={classes.patientInfo}>
+              {`${patient.firstName} ${patient.lastName}`}
+            </div>
+          </div>))
     }
   </Paper>
 );
@@ -49,6 +56,7 @@ PatientList.propTypes = {
   patients: PropTypes.arrayOf(PropTypes.object),
   history: PropTypes.object.isRequired,
   classes: PropTypes.object.isRequired,
+  searchQuery: PropTypes.string,
 };
 
 export default withRouter(withStyles(styles)(PatientList));
