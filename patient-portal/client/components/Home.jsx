@@ -19,7 +19,7 @@ const Home = ({ user }) => (
   />
 );
 
-const mapStateToProps = ({ user }) => ({ user });
+const mapStateToProps = ({ user }) => ({ user: user.data });
 
 Home.propTypes = {
   user: PropTypes.shape({
