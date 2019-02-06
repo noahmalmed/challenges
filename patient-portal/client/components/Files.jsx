@@ -5,6 +5,9 @@ import Icon from 'material-ui/Icon';
 import Avatar from 'material-ui/Avatar';
 import List, { ListItem, ListItemAvatar, ListItemText } from 'material-ui/List';
 import { withStyles } from 'material-ui/styles';
+import { connect } from 'react-redux';
+
+import { uploadFile, getFilesForPatient } from '../actions/files';
 
 const styles = {
   container: {
@@ -30,12 +33,18 @@ class Files extends Component {
     this.handleFileUpload = this.handleFileUpload.bind(this);
   }
 
-  handleFileUpload() {
-    // Do something
+  componentDidMount() {
+    this.props.getFilesForPatient(this.props.patientId);
+  }
+
+  handleFileUpload(event) {
+    const file = event.target.files[0];
+    this.props.uploadFile(file, this.props.patientId)
+      .then(() => this.props.getFilesForPatient(this.props.patientId));
   }
 
   render() {
-    const { classes, files } = this.props;
+    const { classes, files, canUpload } = this.props;
     return (
       <div className={classes.container}>
         {
@@ -60,17 +69,35 @@ class Files extends Component {
           className={classes.fileInput}
           onChange={this.handleFileUpload}
         />
-        <Button component="label" htmlFor="file" variant="raised" color="primary">
-          Upload File
-        </Button>
+        { canUpload &&
+          <Button component="label" htmlFor="file" variant="raised" color="primary">
+            Upload File
+          </Button>
+        }
       </div>
     );
   }
 }
 
 Files.propTypes = {
+  canUpload: PropTypes.bool,
   classes: PropTypes.object.isRequired,
   files: PropTypes.array,
+  patientId: PropTypes.string,
+  getFilesForPatient: PropTypes.func,
+  uploadFile: PropTypes.func,
 };
 
-export default withStyles(styles)(Files);
+const mapStateToProps = (state) => ({
+  files: state.files,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  uploadFile: (file, patientId) =>
+    dispatch(uploadFile(file, patientId)),
+  getFilesForPatient: (patientId) => {
+    dispatch(getFilesForPatient(patientId));
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Files));

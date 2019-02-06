@@ -6,6 +6,7 @@ import Button from 'material-ui/Button';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField';
 import { withStyles } from 'material-ui/styles';
+import moment from 'moment';
 
 const styles = {
   card: {
@@ -17,18 +18,38 @@ const styles = {
   },
   content: {
     display: 'flex',
+    flex: 1,
     justifyContent: 'space-between',
+  },
+  contentContainer: {
+    display: 'flex',
+    flex: 1,
+  },
+  headerContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginBottom: 10,
+    marginTop: 10,
   },
   header: {
     fontSize: 13,
     fontWeight: 600,
-    marginBottom: 10,
-    marginTop: 10,
   },
   action: {
     fontSize: 12,
   },
+  cancelButton: {
+    marginLeft: 20,
+  },
+  buttonContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
 };
+
+const convertDateTime = (dateTime) =>
+  moment(dateTime).format('dddd, MMMM D, YYYY, hh:mm A');
 
 class Appointment extends Component {
   constructor(props) {
@@ -50,51 +71,83 @@ class Appointment extends Component {
   }
 
   render() {
-    const { appt, classes } = this.props;
+    const {
+      appt,
+      classes,
+      viewer,
+      isCancelable,
+      onAppointmentCancelRequest,
+      onAppointmentConfirmRequest,
+    } = this.props;
+
     return (
-      <Card key={appt.datetime} className={classes.card} onClick={appt.status === 'pending' ? this.toggleDrawer : () => {}}>
+      <Card
+        key={appt.datetime}
+        className={classes.card}
+      >
         <CardContent>
           <div className={classes.content}>
             <div>
-              <div className={classes.header}>{appt.datetime}</div>
+              <div className={classes.headerContainer}>
+                <div className={classes.header}>
+                  {convertDateTime(appt.datetime)}
+                </div>
+                { isCancelable && viewer === 'patient' &&
+                  <div className={classes.cancelButton}>
+                    <Button
+                      variant="raised"
+                      color="primary"
+                      onClick={() => onAppointmentCancelRequest(appt.id)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                }
+              </div>
               <div>
                 {appt.purpose}
               </div>
             </div>
           </div>
         </CardContent>
+        <Divider />
         {
-          appt.status === 'pending' ?
-            <Collapse isOpened={this.state.drawerOpen}>
-              <Divider />
-              <CardContent>
-                <div>
-                  <div className={classes.header}>Message to Patient</div>
-                  <form>
-                    <div className={classes.marginBottom}>
-                      <TextField
-                        name="message"
-                        onChange={this.onMessageChange}
-                        value={this.state.message}
-                        inputProps={{ style: { fontSize: 11 } }}
-                        multiline
-                        fullWidth
-                      />
-                    </div>
-                    <div>
-                      <Button
-                        onClick={this.handleSubmit}
-                        variant="raised"
-                        color="primary"
-                        className={classes.action}
-                      >
+          appt.status === 'pending' && viewer === 'doctor' ?
+            <CardContent>
+              <div>
+                <div className={classes.header}>Message to Patient</div>
+                <form>
+                  <div className={classes.marginBottom}>
+                    <TextField
+                      name="message"
+                      onChange={this.onMessageChange}
+                      value={this.state.message}
+                      inputProps={{ style: { fontSize: 11 } }}
+                      multiline
+                      fullWidth
+                    />
+                  </div>
+                  <div className={classes.buttonContainer}>
+                    <Button
+                      onClick={() => onAppointmentCancelRequest(appt.id)}
+                      variant="raised"
+                      color="primary"
+                      className={classes.action}
+                    >
                       Decline Request
                     </Button>
-                    </div>
-                  </form>
-                </div>
-              </CardContent>
-            </Collapse> : null
+                    <Button
+                      onClick={() => onAppointmentConfirmRequest(appt.id)}
+                      variant="raised"
+                      color="primary"
+                      className={classes.action}
+                    >
+                      Accept Request
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </CardContent> : null
         }
       </Card>
     );
@@ -103,12 +156,16 @@ class Appointment extends Component {
 
 Appointment.propTypes = {
   appt: PropTypes.shape({
-    id: PropTypes.number,
+    id: PropTypes.string,
     status: PropTypes.string,
     purpose: PropTypes.string,
     datetime: PropTypes.string,
   }),
   classes: PropTypes.object.isRequired,
+  viewer: PropTypes.oneOf(['patient', 'doctor']),
+  isCancelable: PropTypes.bool,
+  onAppointmentCancelRequest: PropTypes.func,
+  onAppointmentConfirmRequest: PropTypes.func,
 };
 
 export default withStyles(styles)(Appointment);
